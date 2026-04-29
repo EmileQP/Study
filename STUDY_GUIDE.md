@@ -18,7 +18,86 @@
 
 ## Topic 1 – Machine Learning Basics (7 marks)
 
-*Source files: `AIML231_Week1_ML_Tasks.pdf`, `AIML231_Week2_Classification.pdf`*
+*Source files: `AIML231_Week1_ML_Overview.pdf`, `AIML231_Week1_ML_Tasks.pdf`, `AIML231_Week2_Classification.pdf`*
+
+### 1.0 Week 1 ML Overview: AI, Data, and the ML Workflow
+
+*(Source: `AIML231_Week1_ML_Overview.pdf`)*
+
+#### What is Artificial Intelligence vs Machine Learning?
+
+- **Artificial Intelligence (AI):** A broad field of computer science focused on creating systems capable of carrying out tasks in a way we would consider "smart."
+- **Machine Learning (ML):** A current application of AI based around the idea of giving machines access to data and letting them learn for themselves — without being explicitly programmed.
+
+#### The Four Elements of Every ML Problem
+
+| Element | Description | Example |
+|---|---|---|
+| **Data** | The raw examples used for learning | Banknote measurements CSV |
+| **Task** | What we want the system to do | Classify note as genuine or forged |
+| **Model** | The learned function used to make predictions | Trained decision tree |
+| **Algorithm** | The procedure that produces the model from data | ID3, gradient descent |
+
+#### Data Representation
+
+- Datasets are typically structured as a **table of instances** (rows) and **features** (columns).
+- Each row is one **instance** (or example, observation, data point).
+- **Features (X):** The input variables — the independent variables used for prediction. Also called attributes or predictors. Represented as a **vector**: X = (x₀, x₁, x₂, …, xd).
+- **Labels (y):** The output variable (the thing we want to predict). In supervised learning each instance has a label; in unsupervised learning there are no labels.
+- Data can be viewed as **points in a d-dimensional vector space**, where d = number of features.
+
+#### Training, Validation, and Testing
+
+A supervised ML workflow always splits data into (at least) three non-overlapping subsets:
+
+| Subset | Role |
+|---|---|
+| **Training set** | Used to fit (train) the model — the algorithm sees these examples. |
+| **Validation set** | Used during development to tune hyperparameters and compare models. The model does NOT train on this. |
+| **Test set** | Held out until the very end; provides an unbiased estimate of real-world performance. Never touched during training or tuning. |
+
+> **Exam tip:** Never fit any preprocessing transformer (scaler, encoder) on the validation or test set — fit on train, transform all sets. Doing otherwise causes **data leakage**.
+
+#### General ML Workflow
+
+1. **Define the problem** — what task, what data, what success metric?
+2. **Collect and explore data** — understand distributions, spot missing values, outliers.
+3. **Preprocess data** — clean, encode, scale, engineer features; *split into train/val/test first*.
+4. **Select and train a model** — choose algorithm family; fit on training data.
+5. **Evaluate and tune** — measure performance on validation set; adjust hyperparameters.
+6. **Final evaluation** — assess on held-out test set to estimate real-world performance.
+7. **Deploy** — integrate model into production; monitor for drift.
+
+#### Features and Labels in Practice
+
+- **Numerical features** (continuous or discrete numbers) — e.g., height, price, sensor readings.
+- **Categorical features** (finite set of categories) — e.g., colour, postcode, true/false.
+- **Binary label** (two classes) → binary classification.
+- **Multi-class label** (>2 classes) → multi-class classification.
+- **Continuous label** (real number) → regression.
+- **No label** → unsupervised (clustering, dimensionality reduction).
+
+#### Overfitting, Underfitting, and Generalisation
+
+| Concept | Cause | Symptom |
+|---|---|---|
+| **Underfitting** | Model too simple; high bias | Poor performance on *both* train and test sets |
+| **Good fit** | Model complexity matches data | Good performance on train and test sets |
+| **Overfitting** | Model too complex; high variance; memorises noise | High train accuracy, *much lower* test accuracy |
+
+- **Generalisation:** A model's ability to perform well on *unseen* data.
+- The goal of ML is good generalisation, not simply low training error.
+
+#### Python Ecosystem for ML
+
+Common tools introduced in Week 1:
+- **NumPy** — array/matrix operations
+- **Pandas** — data frames and CSV loading
+- **Matplotlib** — visualisation
+- **Scikit-learn (sklearn)** — ML algorithms, pipelines, preprocessing, metrics
+- **Jupyter Notebooks** — interactive development environment
+
+---
 
 ### 1.1 Key Concepts and Definitions
 
@@ -555,90 +634,245 @@ Answer: **11** — one weight per feature (w₁ to w₁₀) plus one intercept (
 
 ### 5.1 Key Concepts and Definitions
 
-**Clustering** is an *unsupervised* task: group objects so that within-group similarity is high and between-group similarity is low. Class labels are unknown.
+**Clustering** is an *unsupervised* task: group objects so that within-group similarity is high and between-group similarity is low. Class labels are **unknown** — clustering discovers hidden structure in data.
 
 | | Clustering | Classification |
 |---|---|---|
-| Number of classes | Unknown | Known |
+| Labels | Unknown (unsupervised) | Known (supervised) |
 | Training data | Not required | Required |
-| Aim | Find structure in existing data | Classify future instances |
+| Number of classes | Usually not given in advance | Known |
+| Aim | Find natural groups in data | Classify future instances |
 
-### 5.2 Distance Measures
+#### Real-World Motivation: Customer Segmentation
 
-- **Euclidean distance:** most common for numerical features.
-- **Manhattan distance:** sum of absolute differences per dimension.
-- **Cosine distance:** angle between vectors; used in text.
-- **Hamming distance:** number of positions that differ; used for categorical features.
+**Customer segmentation** divides customers into groups sharing common characteristics:
+- Historical purchases, geographical location, product/service preferences, socio-economic factors (income, education).
+- Each group can be targeted with tailored marketing strategies.
+- Leads to better customer support, more effective communication, and increased revenue.
 
-### 5.3 K-Means Clustering
+**Netflix example:** Netflix clusters users and content together. Based on a user's viewing history and what similar users tend to watch, the system quickly recommends relevant content — a direct application of clustering without any explicit content labels.
 
-(`AIML231_Week7-Clustering (1).pdf` pp. 10–15; 2024 Q4c)
+---
 
-**Algorithm:**
-1. Initialise K cluster centroids randomly.
-2. **Assign:** each instance → nearest centroid.
-3. **Update:** recompute each centroid as the mean of its assigned instances.
-4. Repeat steps 2–3 until centroids do not change (convergence).
+### 5.2 Distance and Similarity Measures
+
+The core challenge in clustering is defining **similarity**. This is typically formalised as a **distance** D(o₁, o₂): a real number between two data points. Different distance measures lead to different cluster shapes.
+
+#### For Numerical Features
+
+| Measure | Formula | Intuition |
+|---|---|---|
+| **Euclidean distance** | √(Σᵢ (oᵢ₁ − oᵢ₂)²) | Straight-line ("as the crow flies") distance |
+| **Manhattan distance** | Σᵢ \|oᵢ₁ − oᵢ₂\| | "Taxicab" distance — travel only up/down then left/right |
+| **Cosine distance** | 1 − (o₁·o₂) / (\|o₁\| \|o₂\|) | Angle between the two vectors; ignores magnitude |
+
+- **Euclidean:** most common; good for compact, spherical clusters.
+- **Manhattan:** less sensitive to outliers than Euclidean; useful when features have very different scales.
+- **Cosine:** commonly used for text/document data (e.g., term-frequency vectors) where only direction matters.
+
+#### For Categorical Features
+
+| Measure | Description |
+|---|---|
+| **Hamming distance** | Count of positions where the two values differ (e.g., "cat" vs "car" → 1 difference) |
+
+> **Exam tip:** Choosing the right distance measure is part of the clustering design. Euclidean on categorical data is meaningless.
+
+---
+
+### 5.3 Clustering Methods Overview
+
+Two major families of clustering algorithms:
+
+| Family | Approach | Example algorithms |
+|---|---|---|
+| **Hierarchical** | Build a tree of nested clusters | Agglomerative, Divisive |
+| **Partitional** | Divide data into K non-overlapping clusters | K-Means, K-Medoids |
+| **Density-based** | Define clusters as dense regions | DBSCAN, Mean Shift |
+
+---
+
+### 5.4 Hierarchical Clustering
+
+Produces a **tree-like hierarchy** of clusters, represented as a **dendrogram**. Useful when you want to explore multiple levels of grouping without re-running the algorithm.
+
+#### Two Directions
+
+| Type | Direction | Description |
+|---|---|---|
+| **Agglomerative (bottom-up)** | Leaves → root | Start with n individual clusters; repeatedly merge the two most similar until one cluster remains. **More common and more efficient.** |
+| **Divisive (top-down)** | Root → leaves | Start with one cluster; recursively split until every instance is its own cluster. Rarely used in practice. |
+
+#### Agglomerative Clustering Algorithm (detailed)
+
+1. Start: treat every observation as its own cluster → n clusters (leaves of the tree).
+2. Compute all pairwise distances — **n(n−1)/2** pairs.
+3. Find the two clusters with minimum dissimilarity; merge them.
+4. Recompute distances from the new cluster to all others (using chosen linkage method).
+5. Repeat steps 3–4 until only one cluster remains.
+
+**Key property:** No random initialisation — the algorithm is **fully deterministic**. Same data always produces the same dendrogram.
+
+**Computational cost:** Must recalculate distances at each step → **O(n²)** to O(n² log n). Expensive for large datasets.
+
+#### Linkage Methods
+
+How we measure the distance *between two clusters* (not individual points):
+
+| Linkage | Distance between cluster A and cluster B | Tendency |
+|---|---|---|
+| **Single linkage** | Minimum pairwise distance (closest pair) | Can create long, "chained" clusters (trailing effect) |
+| **Complete linkage** | Maximum pairwise distance (farthest pair) | Tends to produce compact, more balanced clusters |
+| **Average linkage** | Mean of all pairwise distances | Compromise; generally produces balanced dendrograms |
+
+> **Exam tip:** Complete and average linkage tend to give more balanced, meaningful dendrograms. Single linkage can cause the "chaining" problem.
+
+#### Dendrograms
+
+A **dendrogram** is the tree diagram produced by hierarchical clustering:
+- Each **leaf** = one original data point.
+- Each **internal node** = a merge (or split) event.
+- The **height** of a merge = the dissimilarity between the merged clusters at that step.
+- To obtain k clusters: cut the dendrogram horizontally at an appropriate height → k subtrees = k clusters. **No need to re-run** — one dendrogram gives all levels of clustering.
+
+---
+
+### 5.5 Partitional Clustering: K-Means
+
+*(Source: `AIML231_Week7-Clustering (1).pdf` pp. 10–15; 2024 Q4c)*
+
+**K-Means** is the most widely used partitional clustering algorithm. It partitions n instances into exactly K clusters.
+
+#### Algorithm Steps
+
+1. Choose K (the number of clusters).
+2. **Initialise:** Place K cluster centroids randomly (in feature space).
+3. **Assign:** For each instance, compute its distance to all K centroids; assign the instance to the nearest centroid.
+4. **Update:** Recompute each centroid as the **mean** (average position) of all instances currently assigned to that cluster.
+5. **Repeat** steps 3–4 until the centroids stop changing (convergence).
+
+#### Strengths
+
+- **Simple and interpretable** — intuitive algorithm with clear steps.
+- **Scalable** — O(n·K·I·d) complexity (n=instances, K=clusters, I=iterations, d=features); handles large datasets well.
+- **Flexible** — works with any numeric features and any distance metric.
+
+#### Limitations
+
+| Limitation | Why it matters |
+|---|---|
+| Must specify K in advance | No built-in mechanism to determine the right K |
+| Stochastic (random initialisation) | Different runs may give different results; may converge to local optima |
+| Requires mean to be defined | Cannot be directly applied to categorical-only data |
+| Sensitive to outliers | The mean is pulled toward extreme values |
+| Re-run needed for different K | Unlike hierarchical, you cannot extract different K from a single run |
+
+---
+
+### 5.6 Density-Based Clustering
+
+Density-based methods define **clusters as dense regions of data points**, separated by sparse regions. They can find clusters of **arbitrary shape** and identify **outliers** automatically.
+
+#### Mean Shift
+
+- Places a **sliding window** (with a fixed bandwidth h) centred at each data point.
+- Computes the **mean** of all points within the window.
+- Shifts the window toward that mean — repeating until convergence.
+- Points whose windows converge to the **same mode** (peak) are grouped into the same cluster.
+
+**Strengths:**
+- Automatically determines number of clusters (no K needed).
+- Handles arbitrary cluster shapes.
 
 **Limitations:**
-1. Must specify K in advance.
-2. Stochastic — different initialisation → different results (may converge to local optima).
-3. Applicable only when mean is defined (not suitable for categorical-only data).
-4. Sensitive to outliers (mean is pulled by extreme values).
+- Sensitive to **bandwidth choice** (h) — acts like K in K-Means.
+- Computationally expensive — O(n² per iteration).
 
-**Efficiency:** O(n·K·I·d) where n=instances, I=iterations, d=features — scales well with large n.
+#### DBSCAN (Density-Based Spatial Clustering of Applications with Noise)
 
-### 5.4 Agglomerative Clustering (Hierarchical)
+DBSCAN uses two parameters:
+- **eps (ε):** The radius of the neighbourhood around each point.
+- **minPts:** The minimum number of points required within eps to form a dense region.
 
-(`AIML231_Week7-Clustering (1).pdf` pp. 16–29; 2024 Q4c)
+**Point types:**
+- **Core point:** Has at least minPts points within distance eps (including itself) → in a dense region.
+- **Border point:** Within eps of a core point but has fewer than minPts neighbours itself.
+- **Outlier/Noise point:** Neither a core point nor a border point → not assigned to any cluster.
 
-**Bottom-up algorithm:**
-1. Start: each instance is its own cluster (n clusters).
-2. Compute all pairwise distances.
-3. Merge the two most similar (least dissimilar) clusters.
-4. Recompute distances using linkage method.
-5. Repeat until one cluster remains.
+**Algorithm:** Start from an unvisited core point; expand the cluster by recursively adding all density-reachable points (core points within eps, and their neighbourhood). Move to unvisited points until done.
 
-**Linkage methods:**
-- **Single linkage:** distance between clusters = min pairwise distance.
-- **Complete linkage:** max pairwise distance (produces more balanced dendrograms).
-- **Average linkage:** average pairwise distance.
-
-**Dendrogram:** Tree visualisation where height at merge = dissimilarity between merged clusters. Cut horizontally at desired height to obtain k clusters without re-running.
-
-**Advantages over K-Means:**
+**Strengths:**
+- Handles **arbitrary shapes** — not limited to spherical clusters.
+- Automatically identifies **outliers** as noise.
 - No need to specify K in advance.
-- No random initialisation (deterministic).
-- Can use dendrograms to explore multiple cluster numbers.
-- Works with categorical data (if appropriate distance metric used).
 
-**Disadvantage:** Computationally expensive — O(n²) or O(n² log n) — problematic for large n.
+**Limitations:**
+- Struggles with **varying density** — one eps/minPts pair cannot handle clusters of different densities.
+- Sensitive to parameter selection (eps, minPts).
+- Poor performance in **high-dimensional** data (distances become uniform → curse of dimensionality).
 
-*2024 Q4c(3): For 1,000,000 instances, K-Means is more efficient than agglomerative (which requires pairwise distances for all instances).*
+| | K-Means | Agglomerative | DBSCAN | Mean Shift |
+|---|---|---|---|---|
+| Specify K? | Yes | No | No | No |
+| Deterministic? | No | Yes | Yes | Yes |
+| Handles outliers? | No | No | Yes | No |
+| Arbitrary shapes? | No | Partially | Yes | Yes |
+| Large datasets? | Yes | No (O(n²)) | Yes (with index) | No |
 
-### 5.5 Clustering Performance Metrics
+---
 
-(`AIML231_Week7-Clustering (1).pdf` pp. 30–32)
+### 5.7 Clustering Performance Metrics
+
+Since there are no ground-truth labels in unsupervised clustering, we evaluate using **internal metrics** that measure compactness and separability.
+
+#### Core Principle
+
+Good clusters should be:
+- **Compact** (low intra-cluster distance) — instances within a cluster are close to each other.
+- **Well-separated** (high inter-cluster distance) — clusters are far from each other.
 
 | Metric | Description |
 |---|---|
-| **Intra-cluster distance** | Average distance within clusters — *minimise* (compactness) |
-| **Inter-cluster distance** | Average distance between clusters — *maximise* (separability) |
-| **Silhouette score** | For each instance: s(i) = (b(i)−a(i)) / max(a(i), b(i)); range [−1, 1]; 1=perfect, 0=border, −1=wrong cluster |
+| **Intra-cluster distance** | Average within-cluster distances — *minimise* |
+| **Inter-cluster distance** | Average between-cluster distances — *maximise* |
 
-Where: a(i) = average distance to all instances in same cluster; b(i) = minimum average distance to any other cluster.
+#### Silhouette Score
 
-### 5.6 Other Clustering Methods
+For each instance i, the silhouette score s(i) measures how well it fits its assigned cluster compared to the nearest alternative cluster:
 
-- **DBSCAN:** Density-based; parameters eps (neighbourhood radius) and minPts (min cluster size). Handles arbitrary shapes and outliers; no need to specify K; struggles with varying densities and high dimensions.
-- **Mean Shift:** Density-based; automatically determines number of clusters; moves "representative" points toward local density peaks; sensitive to bandwidth choice.
+```
+s(i) = (b(i) − a(i)) / max(a(i), b(i))
+```
 
-### 5.7 Typical Pitfalls
+Where:
+- **a(i)** = average distance from i to all other instances in the **same** cluster (intra-cluster cohesion).
+- **b(i)** = minimum average distance from i to instances in any **other** cluster (nearest-cluster separation).
 
-- Saying clustering "requires training labels" — it does NOT.
-- Confusing K-Means (stochastic) with agglomerative (deterministic).
+| Score | Interpretation |
+|---|---|
+| s(i) = 1 | Instance is perfectly placed in its cluster. |
+| s(i) = 0 | Instance is on the boundary between two clusters. |
+| s(i) = −1 | Instance is misclassified — closer to a neighbouring cluster. |
+
+The overall **silhouette coefficient** = average s(i) across all instances. Closer to 1 = better clustering.
+
+#### Other Internal Indices (mentioned for completeness)
+
+- **Davies-Bouldin Index** — ratio of intra-cluster scatter to inter-cluster separation; *lower* is better.
+- **Dunn Index** — ratio of minimum inter-cluster distance to maximum intra-cluster distance; *higher* is better.
+- **Calinski-Harabasz Index** — ratio of inter-cluster dispersion to intra-cluster dispersion; *higher* is better.
+
+---
+
+### 5.8 Typical Pitfalls
+
+- Saying clustering "requires training labels" — it does **NOT** (unsupervised).
+- Confusing K-Means (**stochastic**) with agglomerative (**deterministic**).
 - Forgetting the Silhouette score range is [−1, 1], not [0, 1].
-- For large datasets, K-Means scales better than agglomerative (pairwise distances).
+- For large datasets, K-Means scales far better than agglomerative (pairwise distances are O(n²)).
+- Forgetting that K-Means requires **re-running** for each different K, whereas a single dendrogram can be cut at any height.
+- Saying DBSCAN needs K — it does not; K is automatic from density.
+- Confusing **eps** and **minPts** in DBSCAN — eps is the radius, minPts is the point count threshold.
 
 ---
 
@@ -646,6 +880,11 @@ Where: a(i) = average distance to all instances in same cluster; b(i) = minimum 
 
 | Topic | Key facts to memorise |
 |---|---|
+| AI vs ML | AI = broad field; ML = AI subfield that learns from data without explicit programming |
+| Four ML elements | Data, Task, Model, Algorithm |
+| Data representation | Instances = rows; Features (X) = input columns; Labels (y) = output column |
+| Train/Val/Test split | Train = fit model; Validation = tune hyperparameters; Test = final unbiased evaluation |
+| ML workflow | Define → Collect → Preprocess → Train → Evaluate → Deploy |
 | ML Types | Supervised (labels), Unsupervised (no labels), Reinforcement (rewards) |
 | KNN large K | Underfitting, over-smoothing, slow prediction |
 | Entropy | H=0 pure; H=1 max uncertainty (binary) |
@@ -658,9 +897,21 @@ Where: a(i) = average distance to all instances in same cluster; b(i) = minimum 
 | PCA | Unsupervised filter; max d PCs; orthogonal components |
 | Linear regression weights | d features → d+1 weights (d slopes + 1 intercept) |
 | Lasso vs Ridge | Lasso zeroes weights (feature selection); Ridge shrinks but keeps all |
-| K-Means limits | Need K; stochastic; mean-based only |
-| Agglomerative | Deterministic; no K needed; O(n²); dendrogram |
-| Silhouette | Range [−1,1]; higher = better match to cluster |
+| Clustering | Unsupervised; no labels; finds natural groups |
+| Customer segmentation | Group users by behaviour; Netflix uses clustering for recommendations |
+| Distance measures | Euclidean (straight line); Manhattan (taxicab); Cosine (angle, text); Hamming (categorical) |
+| K-Means limits | Need K; stochastic; mean-based only; sensitive to outliers |
+| K-Means strengths | Simple; scalable O(n·K·I·d); flexible |
+| Agglomerative | Deterministic; no K needed; O(n²); dendrogram; bottom-up |
+| Divisive | Top-down hierarchical; less common than agglomerative |
+| Linkage methods | Single=min; Complete=max (balanced); Average=mean (balanced) |
+| Dendrogram | Tree of merges; cut at height h → k clusters; no re-run needed |
+| DBSCAN params | eps (radius) + minPts (threshold); core/border/noise points |
+| DBSCAN strengths | No K; arbitrary shapes; finds outliers |
+| DBSCAN limits | Struggles with varying density; high-dimensional data |
+| Mean Shift | No K needed; finds modes; sensitive to bandwidth; expensive |
+| Silhouette | Range [−1,1]; higher = better match to cluster; formula uses a(i) and b(i) |
+| Other cluster metrics | Davies-Bouldin (lower better); Dunn (higher better); Calinski-Harabasz (higher better) |
 | FNR + TPR = 1 | FPR + TNR = 1 |
 | F1 | Harmonic mean of Precision and Recall |
 | R² | ≤1; 1=perfect; 0=no better than mean; recommended for regression |

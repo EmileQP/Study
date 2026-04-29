@@ -560,6 +560,21 @@ Final selected features: **{f₂, f₃}** with accuracy 0.88. *(2 marks: correct
 **Q1-S5.** A model achieves 99% training accuracy and 55% test accuracy. Is this overfitting or underfitting? Explain.  
 *Answer: Overfitting. The model has memorised the training data including noise and fails to generalise to unseen data.*
 
+**Q1-S6.** What is the difference between a **feature** and a **label** in a supervised ML dataset?  
+*Answer: A feature (X) is an input variable describing an instance (e.g., age, pixel value). A label (y) is the output variable the model is trained to predict (e.g., spam/not spam, house price). Features are used as inputs; labels are the targets.*
+
+**Q1-S7.** What are the three roles of the training set, validation set, and test set? Why must they be kept separate?  
+*Answer: Training set — used to fit model parameters; validation set — used to tune hyperparameters and select among models (not seen during training); test set — used once at the very end to estimate real-world performance. They must be separate to avoid data leakage and ensure honest performance estimates.*
+
+**Q1-S8.** List the general steps of a typical machine learning workflow in order.  
+*Answer: (1) Define the problem; (2) Collect and explore data; (3) Preprocess data (split first, then scale/encode); (4) Train model; (5) Evaluate and tune on validation set; (6) Final evaluation on test set; (7) Deploy.*
+
+**Q1-S9.** Name three numerical and one categorical feature type. What distance measure is appropriate for categorical features?  
+*Answer: Numerical: height, temperature, pixel intensity. Categorical example: colour, gender, postcode. Categorical → Hamming distance.*
+
+**Q1-S10.** A model scores 60% on both training and test sets. Is this overfitting, underfitting, or a good fit? What would you do to improve it?  
+*Answer: Underfitting — the model performs poorly on both sets, suggesting it is too simple. To improve: increase model complexity, add more informative features, reduce regularisation, or try a more powerful algorithm.*
+
 ---
 
 ### Topic 2: Classification
@@ -677,6 +692,36 @@ Final selected features: **{f₂, f₃}** with accuracy 0.88. *(2 marks: correct
 
 **Q5-S8.** Give one advantage and one disadvantage of DBSCAN compared to K-Means.  
 *Answer: Advantage: no need to specify K; handles arbitrary shapes and identifies outliers. Disadvantage: sensitive to eps and minPts choices; struggles with datasets having varying density.*
+
+**Q5-S9.** Describe the real-world application of clustering used by Netflix. What is being clustered and why?  
+*Answer: Netflix clusters both users and content. Users with similar viewing histories are grouped together; content is clustered by genre/style. When a new user action occurs, the system recommends content that similar users have enjoyed. This is unsupervised — there are no explicit "good recommendation" labels.*
+
+**Q5-S10.** What is the difference between agglomerative and divisive hierarchical clustering? Which is more commonly used and why?  
+*Answer: Agglomerative (bottom-up) starts with n individual clusters and merges the two most similar at each step until one cluster remains. Divisive (top-down) starts with one cluster and splits recursively. Agglomerative is more commonly used because it is computationally more efficient and easier to implement.*
+
+**Q5-S11.** Explain why K-Means cannot directly handle categorical features. Suggest an alternative approach.  
+*Answer: K-Means computes centroids as the mean of feature values. The mean is undefined for categorical data (e.g., the mean of "red" and "blue" is meaningless). Alternative: use K-Medoids (uses actual data points as cluster centres) or encode categoricals numerically, or use hierarchical clustering with Hamming distance.*
+
+**Q5-S12.** Calculate the silhouette score for a point with a(i) = 0.4 and b(i) = 0.9. Interpret the result.  
+*Answer: s(i) = (b(i) − a(i)) / max(a(i), b(i)) = (0.9 − 0.4) / max(0.4, 0.9) = 0.5 / 0.9 ≈ 0.556. This is a positive score closer to 1 than −1, indicating the point is reasonably well-placed in its own cluster.*
+
+**Q5-S13.** What is a dendrogram and how do you use it to choose the number of clusters without re-running the algorithm?  
+*Answer: A dendrogram is a tree diagram from hierarchical clustering where the y-axis height represents the dissimilarity at each merge. To choose k clusters: draw a horizontal line across the dendrogram — the number of vertical lines it crosses equals k. Choose the cut height to maximise the gap between merge heights (look for a long vertical line before the cut).*
+
+**Q5-S14.** Compare single, complete, and average linkage in agglomerative clustering. Which tends to produce the most balanced dendrograms?  
+*Answer: Single linkage = minimum pairwise distance between clusters — can produce long "chains" where points are absorbed one at a time. Complete linkage = maximum pairwise distance — tends to produce compact, balanced clusters. Average linkage = mean of all pairwise distances — a compromise. Complete and average linkage tend to produce more balanced, interpretable dendrograms.*
+
+**Q5-S15.** [Structured] You are given the following four data points in 1D: A=1, B=2, C=6, D=8. Use agglomerative clustering with **single linkage** and Euclidean distance to construct the dendrogram step by step.
+
+*(a) [2 marks] Compute all pairwise distances.*  
+*(b) [3 marks] Show each merge step and the resulting clusters.*
+
+*Answer:*  
+*(a) Pairwise distances: D(A,B)=1, D(A,C)=5, D(A,D)=7, D(B,C)=4, D(B,D)=6, D(C,D)=2.*  
+*(b) Step 1: Merge A and B (distance=1) → clusters {A,B}, {C}, {D}.*  
+*Step 2: Minimum distance: D({C},{D})=2. Merge C and D → clusters {A,B}, {C,D}.*  
+*Step 3: Distance between {A,B} and {C,D} using single linkage = min(D(A,C), D(A,D), D(B,C), D(B,D)) = min(5,7,4,6) = 4. Merge → one cluster {A,B,C,D} at height 4.*  
+*Dendrogram: A&B merge at 1; C&D merge at 2; all merge at 4.*
 
 ---
 
